@@ -93,7 +93,7 @@ export function TopicReviewModal({
         await onSave(topic.id, commentary, hashtags);
         setLastSaved(new Date());
         toast.success('Draft saved');
-      } catch (error) {
+      } catch {
         toast.error('Failed to save draft');
       } finally {
         setIsSaving(false);

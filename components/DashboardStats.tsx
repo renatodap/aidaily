@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
-import type { DashboardStats } from '@/lib/types';
+import type { DashboardStats, Topic } from '@/lib/types';
 
 export function DashboardStatsComponent() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -30,12 +30,13 @@ export function DashboardStatsComponent() {
       // Fetch all topics for stats
       const { data: topics, error } = await supabase
         .from('topics')
-        .select('*');
+        .select('*')
+        .returns<Topic[]>();
 
       if (error) throw error;
 
-      if (topics) {
-        const pendingTopics = topics.filter(t => t.status === 'pending');
+      if (topics && topics.length > 0) {
+        const pendingTopics = topics.filter((t: Topic) => t.status === 'pending');
         const approvedTopics = topics.filter(t => t.status === 'approved');
         const archivedTopics = topics.filter(t => t.status === 'archived');
 
