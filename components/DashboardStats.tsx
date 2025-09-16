@@ -28,15 +28,16 @@ export function DashboardStatsComponent() {
 
     try {
       // Fetch all topics for stats
-      const { data: topics, error } = await supabase
+      const { data, error } = await supabase
         .from('topics')
-        .select('*')
-        .returns<Topic[]>();
+        .select('*');
 
       if (error) throw error;
 
-      if (topics && topics.length > 0) {
-        const pendingTopics = topics.filter((t: Topic) => t.status === 'pending');
+      const topics = (data || []) as Topic[];
+
+      if (topics) {
+        const pendingTopics = topics.filter(t => t.status === 'pending');
         const approvedTopics = topics.filter(t => t.status === 'approved');
         const archivedTopics = topics.filter(t => t.status === 'archived');
 

@@ -102,10 +102,10 @@ export function useTopics(filters?: TopicFilters) {
     };
   }, [fetchTopics, supabase]);
 
-  const updateTopic = async (id: string, updates: Partial<Topic>) => {
+  const updateTopic = async (id: string, updates: Partial<Omit<Topic, 'id' | 'created_at'>>) => {
     const { error } = await supabase
       .from('topics')
-      .update(updates)
+      .update(updates as any)
       .eq('id', id);
 
     if (error) throw error;
