@@ -1,16 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Search, Filter, Moon, Sun, RefreshCw, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -21,7 +19,6 @@ import { TopicReviewModal } from '@/components/TopicReviewModal';
 import { DashboardStatsComponent } from '@/components/DashboardStats';
 import { useTopics } from '@/lib/hooks/useTopics';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { createClient } from '@/lib/supabase/client';
 import type { Topic, TopicFilters, Momentum } from '@/lib/types';
 import { toast, Toaster } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -37,8 +34,6 @@ export default function Dashboard() {
 
   const { theme, toggleTheme } = useTheme();
   const { topics, loading, error, updateTopic, refetch } = useTopics(filters);
-
-  const supabase = createClient();
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -126,7 +121,7 @@ export default function Dashboard() {
         updated_at: new Date().toISOString(),
       });
       toast.success('Topic approved');
-    } catch (error) {
+    } catch {
       toast.error('Failed to approve topic');
     }
   };

@@ -129,7 +129,7 @@ export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicC
 
         <div className="text-xs text-muted-foreground">
           {topic.relevance && (
-            <p className="line-clamp-1 italic">"{topic.relevance}"</p>
+            <p className="line-clamp-1 italic">&ldquo;{topic.relevance}&rdquo;</p>
           )}
         </div>
 

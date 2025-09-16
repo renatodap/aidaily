@@ -17,7 +17,6 @@ import {
   Star,
   AlertCircle,
   Zap,
-  FileText,
   Sparkles
 } from 'lucide-react';
 import {
@@ -107,21 +106,21 @@ export function TopicReviewModal({
   const wordCount = commentary.split(' ').filter(word => word.length > 0).length;
   const characterCount = commentary.length;
 
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = useCallback(async () => {
     if (!topic) return;
     setIsSaving(true);
     try {
       await onSave(topic.id, commentary, hashtags);
       setLastSaved(new Date());
       toast.success('Draft saved successfully');
-    } catch (error) {
+    } catch {
       toast.error('Failed to save draft');
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [topic, commentary, hashtags, onSave]);
 
-  const handleApprove = async () => {
+  const handleApprove = useCallback(async () => {
     if (!topic) return;
     if (wordCount < 500) {
       toast.error('Commentary must be at least 500 words');
@@ -132,12 +131,12 @@ export function TopicReviewModal({
       await onApprove(topic.id, commentary, hashtags);
       toast.success('Topic approved successfully');
       onClose();
-    } catch (error) {
+    } catch {
       toast.error('Failed to approve topic');
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [topic, wordCount, commentary, hashtags, onApprove, onClose]);
 
   const handleArchive = async () => {
     if (!topic) return;
@@ -145,7 +144,7 @@ export function TopicReviewModal({
       await onArchive(topic.id);
       toast.success('Topic archived');
       onClose();
-    } catch (error) {
+    } catch {
       toast.error('Failed to archive topic');
     }
   };
@@ -198,7 +197,7 @@ export function TopicReviewModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, topic, commentary, hashtags, wordCount]);
+  }, [isOpen, topic, wordCount, handleSaveDraft, handleApprove]);
 
   if (!topic) return null;
 
