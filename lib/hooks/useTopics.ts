@@ -84,13 +84,23 @@ export function useTopics(filters?: TopicFilters) {
           if (payload.eventType === 'INSERT') {
             setTopics((prev) => [payload.new as Topic, ...prev]);
           } else if (payload.eventType === 'UPDATE') {
-            setTopics((prev) =>
-              prev.map((topic) =>
-                topic.id === (payload.new as Topic).id
-                  ? (payload.new as Topic)
-                  : topic
-              )
-            );
+            const updatedTopic = payload.new as Topic;
+            // Check if the updated topic still matches the current filters
+            const shouldInclude = !filters?.status ||
+              filters.status.length === 0 ||
+              filters.status.includes(updatedTopic.status);
+
+            setTopics((prev) => {
+              if (!shouldInclude) {
+                // Remove the topic if it no longer matches the filters
+                return prev.filter((topic) => topic.id !== updatedTopic.id);
+              } else {
+                // Update the topic if it still matches the filters
+                return prev.map((topic) =>
+                  topic.id === updatedTopic.id ? updatedTopic : topic
+                );
+              }
+            });
           } else if (payload.eventType === 'DELETE') {
             setTopics((prev) =>
               prev.filter((topic) => topic.id !== payload.old.id)
@@ -103,7 +113,7 @@ export function useTopics(filters?: TopicFilters) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchTopics, supabase]);
+  }, [fetchTopics, supabase, filters?.status]);
 
   const updateTopic = async (id: string, updates: Partial<Topic>) => {
     // Create clean update object excluding read-only fields

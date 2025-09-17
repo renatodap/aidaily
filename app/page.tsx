@@ -119,7 +119,8 @@ export default function Dashboard() {
         status: 'archived',
         updated_at: new Date().toISOString(),
       });
-      toast.success('Topic archived');
+      toast.success('Topic archived successfully');
+      // Topic will be automatically removed from view via real-time subscription
     } catch (err) {
       toast.error('Failed to archive topic');
       throw err;
