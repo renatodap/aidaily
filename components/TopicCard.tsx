@@ -2,19 +2,11 @@
 
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { motion } from 'framer-motion';
 import {
-  Clock,
-  TrendingUp,
-  Star,
-  Hash,
-  ChevronRight,
   Archive,
-  CheckCircle,
-  AlertCircle,
-  Zap
+  CheckCircle
 } from 'lucide-react';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -34,199 +26,141 @@ const momentumColors = {
   emerging: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
 };
 
-const momentumIcons = {
-  breaking: <Zap className="h-3 w-3" />,
-  peaking: <TrendingUp className="h-3 w-3" />,
-  critical: <AlertCircle className="h-3 w-3" />,
-  emerging: <Clock className="h-3 w-3" />,
-};
-
-const statusColors = {
-  pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-  approved: 'bg-green-500/10 text-green-500 border-green-500/20',
-  archived: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-};
-
 export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
+  const [commentary, setCommentary] = useState(topic.my_commentary || '');
+  const [isEditing, setIsEditing] = useState(false);
 
-  const renderStars = (count: number, max: number = 5) => {
-    return Array.from({ length: max }, (_, i) => (
-      <Star
-        key={i}
-        className={cn(
-          'h-3 w-3',
-          i < count ? 'fill-yellow-500 text-yellow-500' : 'text-gray-400 dark:text-gray-600'
-        )}
-      />
-    ));
+  const characterCount = commentary.length;
+
+  const handleApprove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (characterCount >= 100 && onQuickApprove) {
+      onQuickApprove(topic.id);
+    }
   };
 
-  const characterCount = topic.my_commentary ? topic.my_commentary.length : 0;
+  const handleCommentaryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCommentary(e.target.value);
+  };
+
+  const handleSaveCommentary = async () => {
+    // Save commentary to database
+    try {
+      const response = await fetch(`/api/topics/${topic.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          my_commentary: commentary,
+          updated_at: new Date().toISOString()
+        }),
+      });
+      if (response.ok) {
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Failed to save commentary:', error);
+    }
+  };
 
   return (
-    <motion.div
-      id={`topic-${topic.id}`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      transition={{ duration: 0.4 }}
+    <Card
+      className={cn(
+        'p-4 border transition-all',
+        topic.status === 'approved' && 'border-green-500/50 bg-green-500/5',
+        topic.status === 'archived' && 'opacity-60'
+      )}
+      onClick={() => !isEditing && onReview(topic)}
     >
-      <Card
-        className={cn(
-          'transition-all duration-200 cursor-pointer relative overflow-hidden',
-          'hover:shadow-2xl hover:shadow-purple-500/10',
-          'bg-gradient-to-br from-background to-background/80',
-          topic.status === 'approved' && 'border-green-500/30 bg-green-950/10',
-          topic.status === 'archived' && 'opacity-60',
-          topic.momentum === 'breaking' && 'border-red-500/30 animate-pulse-subtle'
-        )}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onClick={() => onReview(topic)}
-    >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-lg leading-tight flex-1">
-            {topic.title}
-          </h3>
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className={cn('capitalize', statusColors[topic.status])}
-            >
-              {topic.status === 'approved' && <CheckCircle className="h-3 w-3 mr-1" />}
-              {topic.status}
-            </Badge>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 mt-2">
+      {/* Header */}
+      <div className="mb-3">
+        <h3 className="font-semibold text-base mb-1">{topic.title}</h3>
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge
             variant="outline"
-            className={cn('capitalize flex items-center gap-1', momentumColors[topic.momentum])}
+            className={cn('text-xs', momentumColors[topic.momentum])}
           >
-            {momentumIcons[topic.momentum]}
             {topic.momentum}
           </Badge>
-
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <span>Technical:</span>
-            <div className="flex">{renderStars(topic.technical_depth)}</div>
-          </div>
-
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <span>Viral:</span>
-            <div className="flex">{renderStars(topic.viral_potential)}</div>
-          </div>
+          <span className="text-xs text-muted-foreground">
+            T:{topic.technical_depth}/5 V:{topic.viral_potential}/5
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {formatDistanceToNow(new Date(topic.perplexity_generated_at), { addSuffix: true })}
+          </span>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {topic.summary}
-        </p>
+      {/* Summary */}
+      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+        {topic.summary}
+      </p>
 
-        {topic.content_hook && (
-          <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-2">
-            <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
-              Hook: {topic.content_hook}
-            </p>
-          </div>
-        )}
-
-        <div className="text-xs text-muted-foreground">
-          {topic.relevance && (
-            <p className="line-clamp-1 italic">&ldquo;{topic.relevance}&rdquo;</p>
-          )}
+      {/* Commentary Input */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs font-medium">Your thoughts:</label>
+          <span className={cn(
+            "text-xs",
+            characterCount >= 100 ? "text-green-600 font-medium" : "text-muted-foreground"
+          )}>
+            {characterCount}/100 {characterCount >= 100 && "✓"}
+          </span>
         </div>
+        <textarea
+          value={commentary}
+          onChange={handleCommentaryChange}
+          placeholder="Add your 2 cents here... (minimum 100 characters to approve)"
+          className="w-full p-2 text-sm border rounded-md resize-none bg-background"
+          rows={3}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsEditing(true);
+          }}
+          onBlur={() => handleSaveCommentary()}
+        />
+      </div>
 
-        {topic.hashtags && topic.hashtags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {topic.hashtags.slice(0, 5).map((tag, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
-                <Hash className="h-2 w-2 mr-0.5" />
-                {tag}
-              </Badge>
-            ))}
-            {topic.hashtags.length > 5 && (
-              <Badge variant="outline" className="text-xs">
-                +{topic.hashtags.length - 5} more
-              </Badge>
-            )}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between pt-2 border-t">
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {formatDistanceToNow(new Date(topic.perplexity_generated_at), { addSuffix: true })}
-            </div>
-
-            {topic.my_commentary && (
-              <Badge
-                variant={characterCount >= 100 ? "default" : "secondary"}
-                className="text-xs"
-              >
-                {characterCount} chars
-              </Badge>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-            {topic.status === 'pending' && (
-              <>
-                {onArchive && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onArchive(topic.id);
-                    }}
-                    className="h-7 px-2"
-                  >
-                    <Archive className="h-3 w-3" />
-                  </Button>
-                )}
-                {onQuickApprove && characterCount >= 100 && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onQuickApprove(topic.id);
-                    }}
-                    className="h-7 px-2 text-green-600 hover:text-green-700"
-                  >
-                    <CheckCircle className="h-3 w-3" />
-                  </Button>
-                )}
-              </>
-            )}
+      {/* Action Buttons */}
+      <div className="flex gap-2">
+        {topic.status === 'pending' && (
+          <>
             <Button
               size="sm"
-              variant="ghost"
+              variant={characterCount >= 100 ? "default" : "outline"}
+              onClick={handleApprove}
+              disabled={characterCount < 100}
               className={cn(
-                'h-7 px-2 transition-all',
-                isHovered && 'bg-primary/10'
+                "flex-1",
+                characterCount >= 100
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "opacity-50 cursor-not-allowed"
               )}
             >
-              <ChevronRight className="h-4 w-4" />
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Approve {characterCount < 100 && `(${100 - characterCount} more chars)`}
             </Button>
-          </div>
-        </div>
-      </CardContent>
-
-      {/* Visual momentum indicator */}
-      {topic.momentum === 'breaking' && (
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/20 to-transparent rounded-full blur-2xl animate-pulse" />
-      )}
-      {topic.momentum === 'peaking' && (
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/20 to-transparent rounded-full blur-2xl" />
-      )}
+            {onArchive && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onArchive(topic.id);
+                }}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Archive className="h-4 w-4" />
+              </Button>
+            )}
+          </>
+        )}
+        {topic.status === 'approved' && (
+          <Badge className="w-full justify-center bg-green-600">
+            <CheckCircle className="h-4 w-4 mr-1" />
+            Approved
+          </Badge>
+        )}
+      </div>
     </Card>
-    </motion.div>
   );
 }

@@ -1,27 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Filter, Moon, Sun, RefreshCw, Download } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Search, Moon, Sun, RefreshCw, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-} from '@/components/ui/dropdown-menu';
 import { TopicCard } from '@/components/TopicCard';
 import { TopicReviewModal } from '@/components/TopicReviewModal';
-import { DashboardStatsComponent } from '@/components/DashboardStats';
-import { DailyBriefing } from '@/components/DailyBriefing';
 import { useTopics } from '@/lib/hooks/useTopics';
 import { useTheme } from '@/lib/hooks/useTheme';
-import type { Topic, TopicFilters, Momentum } from '@/lib/types';
+import type { Topic, TopicFilters } from '@/lib/types';
 import { toast, Toaster } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -55,17 +44,6 @@ export default function Dashboard() {
     setFilters({ ...filters, searchTerm: value });
   };
 
-  const toggleMomentumFilter = (momentum: Momentum) => {
-    const currentMomentum = filters.momentum || [];
-    const newMomentum = currentMomentum.includes(momentum)
-      ? currentMomentum.filter(m => m !== momentum)
-      : [...currentMomentum, momentum];
-
-    setFilters({
-      ...filters,
-      momentum: newMomentum.length > 0 ? newMomentum : undefined,
-    });
-  };
 
   const handleReview = (topic: Topic) => {
     setSelectedTopic(topic);
@@ -215,89 +193,42 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="container px-4 py-6">
-        {/* Daily Briefing */}
-        <DailyBriefing topics={topics} userName="Renato" />
-
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-6"
-        >
-          <DashboardStatsComponent />
-        </motion.div>
-
-        {/* Search and Filters */}
-        <div className="flex gap-2 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search topics..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-9"
-            />
+      <main className="container max-w-6xl mx-auto px-4 py-4">
+        {/* Simple Stats Bar */}
+        <div className="flex gap-4 mb-4 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">Pending:</span>
+            <Badge variant="secondary">{pendingTopics.length}</Badge>
           </div>
+          <div className="flex items-center gap-2">
+            <span className="font-medium">Approved:</span>
+            <Badge variant="secondary" className="bg-green-500/10 text-green-600">{approvedTopics.length}</Badge>
+          </div>
+        </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Filter className="h-4 w-4 mr-2" />
-                Filters
-                {filters.momentum && filters.momentum.length > 0 && (
-                  <Badge variant="secondary" className="ml-2">
-                    {filters.momentum.length}
-                  </Badge>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Momentum</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {(['breaking', 'peaking', 'critical', 'emerging'] as Momentum[]).map(momentum => (
-                <DropdownMenuCheckboxItem
-                  key={momentum}
-                  checked={filters.momentum?.includes(momentum)}
-                  onCheckedChange={() => toggleMomentumFilter(momentum)}
-                >
-                  {momentum.charAt(0).toUpperCase() + momentum.slice(1)}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Search */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search topics..."
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
 
         {/* Topics Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="pending">
-              Pending
-              {pendingTopics.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {pendingTopics.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="approved">
-              Approved
-              {approvedTopics.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {approvedTopics.length}
-                </Badge>
-              )}
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="pending">Pending</TabsTrigger>
+            <TabsTrigger value="approved">Approved</TabsTrigger>
             <TabsTrigger value="archived">Archived</TabsTrigger>
-            <TabsTrigger value="all">All</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="space-y-4">
             {loading ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-64 bg-muted rounded-lg animate-pulse" />
-                ))}
+              <div className="flex justify-center py-12">
+                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : error ? (
               <div className="text-center py-12 text-muted-foreground">
@@ -308,7 +239,7 @@ export default function Dashboard() {
                 No topics found
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="space-y-3">
                 {topics.map(topic => (
                   <TopicCard
                     key={topic.id}
