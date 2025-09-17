@@ -115,9 +115,9 @@ export function useTopics(filters?: TopicFilters) {
       }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await supabase
       .from('topics')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .update(cleanUpdates as any)
       .eq('id', id)
       .select();
