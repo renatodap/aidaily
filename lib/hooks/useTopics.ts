@@ -1,6 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import type { Database } from '@/lib/supabase/client';
 import type { Topic, TopicFilters } from '@/lib/types';
+
+type TopicUpdate = Database['public']['Tables']['topics']['Update'];
 
 export function useTopics(filters?: TopicFilters) {
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -102,10 +105,10 @@ export function useTopics(filters?: TopicFilters) {
     };
   }, [fetchTopics, supabase]);
 
-  const updateTopic = async (id: string, updates: Partial<Omit<Topic, 'id' | 'created_at'>>) => {
+  const updateTopic = async (id: string, updates: TopicUpdate) => {
     const { error } = await supabase
       .from('topics')
-      .update(updates as Record<string, unknown>)
+      .update(updates)
       .eq('id', id);
 
     if (error) throw error;
