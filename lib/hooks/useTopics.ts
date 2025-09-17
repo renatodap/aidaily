@@ -1,9 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { Database } from '@/lib/supabase/client';
 import type { Topic, TopicFilters } from '@/lib/types';
-
-type TopicUpdate = Database['public']['Tables']['topics']['Update'];
 
 export function useTopics(filters?: TopicFilters) {
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -105,11 +102,21 @@ export function useTopics(filters?: TopicFilters) {
     };
   }, [fetchTopics, supabase]);
 
-  const updateTopic = async (id: string, updates: TopicUpdate) => {
+  const updateTopic = async (id: string, updates: Partial<Topic>) => {
+    // Create a clean update object without id and created_at
+    const cleanUpdates: Record<string, unknown> = {};
+
+    Object.keys(updates).forEach(key => {
+      if (key !== 'id' && key !== 'created_at') {
+        cleanUpdates[key] = (updates as Record<string, unknown>)[key];
+      }
+    });
+
     const { error } = await supabase
       .from('topics')
-      .update(updates)
-      .eq('id', id);
+      .update(cleanUpdates)
+      .eq('id', id)
+      .select();
 
     if (error) throw error;
   };
