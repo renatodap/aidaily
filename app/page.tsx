@@ -1,18 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Moon, Sun, RefreshCw, Download } from 'lucide-react';
+import { Search, RefreshCw, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { TopicCard } from '@/components/TopicCard';
 import { TopicReviewModal } from '@/components/TopicReviewModal';
 import { useTopics } from '@/lib/hooks/useTopics';
-import { useTheme } from '@/lib/hooks/useTheme';
 import type { Topic, TopicFilters } from '@/lib/types';
 import { toast, Toaster } from 'sonner';
-import { cn } from '@/lib/utils';
 
 export default function Dashboard() {
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
@@ -23,7 +20,6 @@ export default function Dashboard() {
   });
   const [activeTab, setActiveTab] = useState('pending');
 
-  const { theme, toggleTheme } = useTheme();
   const { topics, loading, error, updateTopic, refetch } = useTopics(filters);
 
   const handleTabChange = (value: string) => {
@@ -147,45 +143,37 @@ export default function Dashboard() {
   const approvedTopics = topics.filter(t => t.status === 'approved');
 
   return (
-    <div className={cn('min-h-screen bg-background', theme === 'dark' && 'dark')}>
+    <div className="min-h-screen bg-gray-50">
       <Toaster position="top-right" />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center px-4">
-          <div className="flex flex-1 items-center justify-between">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              AI Daily Dashboard
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">
+              AI Daily
             </h1>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Button
                 variant="outline"
-                size="icon"
+                size="sm"
                 onClick={refetch}
                 disabled={loading}
+                className="border-gray-200 hover:bg-gray-50"
               >
-                <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
+                <RefreshCw className={loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
+                <span className="ml-2">Refresh</span>
               </Button>
 
               <Button
                 variant="outline"
-                size="icon"
+                size="sm"
                 onClick={exportTopics}
+                className="border-gray-200 hover:bg-gray-50"
               >
                 <Download className="h-4 w-4" />
-              </Button>
-
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleTheme}
-              >
-                {theme === 'dark' ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
+                <span className="ml-2">Export</span>
               </Button>
             </div>
           </div>
@@ -193,53 +181,55 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="container max-w-6xl mx-auto px-4 py-4">
-        {/* Simple Stats Bar */}
-        <div className="flex gap-4 mb-4 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Pending:</span>
-            <Badge variant="secondary">{pendingTopics.length}</Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Approved:</span>
-            <Badge variant="secondary" className="bg-green-500/10 text-green-600">{approvedTopics.length}</Badge>
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Stats Bar */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+          <div className="flex gap-8">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600">Pending</span>
+              <span className="text-2xl font-semibold text-gray-900">{pendingTopics.length}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600">Approved</span>
+              <span className="text-2xl font-semibold text-green-600">{approvedTopics.length}</span>
+            </div>
           </div>
         </div>
 
         {/* Search */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative mb-6">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
             placeholder="Search topics..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="pl-9"
+            className="pl-12 h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
 
         {/* Topics Tabs */}
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="pending">Pending</TabsTrigger>
-            <TabsTrigger value="approved">Approved</TabsTrigger>
-            <TabsTrigger value="archived">Archived</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg">
+            <TabsTrigger value="pending" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md">Pending</TabsTrigger>
+            <TabsTrigger value="approved" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md">Approved</TabsTrigger>
+            <TabsTrigger value="archived" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md">Archived</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="space-y-4">
             {loading ? (
-              <div className="flex justify-center py-12">
-                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+              <div className="flex justify-center py-16">
+                <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
               </div>
             ) : error ? (
-              <div className="text-center py-12 text-muted-foreground">
-                Error loading topics: {error}
+              <div className="text-center py-16">
+                <p className="text-gray-500">Error loading topics: {error}</p>
               </div>
             ) : topics.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                No topics found
+              <div className="text-center py-16">
+                <p className="text-gray-500">No topics found</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {topics.map(topic => (
                   <TopicCard
                     key={topic.id}

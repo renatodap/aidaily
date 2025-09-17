@@ -20,10 +20,10 @@ interface TopicCardProps {
 }
 
 const momentumColors = {
-  breaking: 'bg-red-500/10 text-red-500 border-red-500/20',
-  peaking: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-  critical: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-  emerging: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  breaking: 'bg-red-50 text-red-700 border-red-200',
+  peaking: 'bg-amber-50 text-amber-700 border-amber-200',
+  critical: 'bg-purple-50 text-purple-700 border-purple-200',
+  emerging: 'bg-blue-50 text-blue-700 border-blue-200',
 };
 
 export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicCardProps) {
@@ -65,43 +65,53 @@ export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicC
   return (
     <Card
       className={cn(
-        'p-4 border transition-all',
-        topic.status === 'approved' && 'border-green-500/50 bg-green-500/5',
-        topic.status === 'archived' && 'opacity-60'
+        'p-6 bg-white border border-gray-200 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md',
+        topic.status === 'approved' && 'border-green-200 bg-green-50',
+        topic.status === 'archived' && 'opacity-50'
       )}
       onClick={() => !isEditing && onReview(topic)}
     >
       {/* Header */}
-      <div className="mb-3">
-        <h3 className="font-semibold text-base mb-1">{topic.title}</h3>
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="mb-4">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="font-semibold text-lg text-gray-900 leading-tight flex-1 mr-3">
+            {topic.title}
+          </h3>
           <Badge
             variant="outline"
-            className={cn('text-xs', momentumColors[topic.momentum])}
+            className={cn('text-xs font-medium shrink-0', momentumColors[topic.momentum])}
           >
             {topic.momentum}
           </Badge>
-          <span className="text-xs text-muted-foreground">
-            T:{topic.technical_depth}/5 V:{topic.viral_potential}/5
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {formatDistanceToNow(new Date(topic.perplexity_generated_at), { addSuffix: true })}
-          </span>
+        </div>
+
+        <div className="flex items-center gap-4 text-xs text-gray-500">
+          <div className="flex items-center gap-1">
+            <span>Technical:</span>
+            <span className="font-medium text-gray-700">{topic.technical_depth}/5</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>Viral:</span>
+            <span className="font-medium text-gray-700">{topic.viral_potential}/5</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>{formatDistanceToNow(new Date(topic.perplexity_generated_at), { addSuffix: true })}</span>
+          </div>
         </div>
       </div>
 
       {/* Summary */}
-      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+      <p className="text-sm text-gray-600 mb-4 leading-relaxed line-clamp-2">
         {topic.summary}
       </p>
 
       {/* Commentary Input */}
-      <div className="mb-3">
-        <div className="flex items-center justify-between mb-1">
-          <label className="text-xs font-medium">Your thoughts:</label>
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-sm font-medium text-gray-700">Your thoughts</label>
           <span className={cn(
-            "text-xs",
-            characterCount >= 100 ? "text-green-600 font-medium" : "text-muted-foreground"
+            "text-xs font-medium",
+            characterCount >= 100 ? "text-green-600" : "text-gray-400"
           )}>
             {characterCount}/100 {characterCount >= 100 && "✓"}
           </span>
@@ -109,8 +119,8 @@ export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicC
         <textarea
           value={commentary}
           onChange={handleCommentaryChange}
-          placeholder="Add your 2 cents here... (minimum 100 characters to approve)"
-          className="w-full p-2 text-sm border rounded-md resize-none bg-background"
+          placeholder="Add your commentary here... (minimum 100 characters to approve)"
+          className="w-full p-3 text-sm border border-gray-200 rounded-lg resize-none bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           rows={3}
           onClick={(e) => {
             e.stopPropagation();
@@ -121,33 +131,33 @@ export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicC
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         {topic.status === 'pending' && (
           <>
             <Button
-              size="sm"
+              size="default"
               variant={characterCount >= 100 ? "default" : "outline"}
               onClick={handleApprove}
               disabled={characterCount < 100}
               className={cn(
-                "flex-1",
+                "flex-1 font-medium",
                 characterCount >= 100
-                  ? "bg-green-600 hover:bg-green-700 text-white"
-                  : "opacity-50 cursor-not-allowed"
+                  ? "bg-green-600 hover:bg-green-700 text-white border-0"
+                  : "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
               )}
             >
-              <CheckCircle className="h-4 w-4 mr-1" />
-              Approve {characterCount < 100 && `(${100 - characterCount} more chars)`}
+              <CheckCircle className="h-4 w-4 mr-2" />
+              {characterCount >= 100 ? 'Approve' : `Need ${100 - characterCount} more characters`}
             </Button>
             {onArchive && (
               <Button
-                size="sm"
+                size="default"
                 variant="outline"
                 onClick={(e) => {
                   e.stopPropagation();
                   onArchive(topic.id);
                 }}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="border-gray-200 text-gray-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200"
               >
                 <Archive className="h-4 w-4" />
               </Button>
@@ -155,10 +165,10 @@ export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicC
           </>
         )}
         {topic.status === 'approved' && (
-          <Badge className="w-full justify-center bg-green-600">
-            <CheckCircle className="h-4 w-4 mr-1" />
+          <div className="w-full py-2 px-4 bg-green-100 text-green-700 font-medium text-center rounded-lg flex items-center justify-center">
+            <CheckCircle className="h-4 w-4 mr-2" />
             Approved
-          </Badge>
+          </div>
         )}
       </div>
     </Card>
