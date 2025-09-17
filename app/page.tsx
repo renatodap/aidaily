@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Search, Filter, Moon, Sun, RefreshCw, Download } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +18,7 @@ import {
 import { TopicCard } from '@/components/TopicCard';
 import { TopicReviewModal } from '@/components/TopicReviewModal';
 import { DashboardStatsComponent } from '@/components/DashboardStats';
+import { DailyBriefing } from '@/components/DailyBriefing';
 import { useTopics } from '@/lib/hooks/useTopics';
 import { useTheme } from '@/lib/hooks/useTheme';
 import type { Topic, TopicFilters, Momentum } from '@/lib/types';
@@ -78,6 +80,17 @@ export default function Dashboard() {
         updated_at: new Date().toISOString(),
       });
       toast.success('Draft saved');
+
+      // Update streak if first review today
+      const today = new Date().toDateString();
+      const todayReviewed = localStorage.getItem(`reviewed_${today}`);
+      if (!todayReviewed || todayReviewed === '0') {
+        const streak = parseInt(localStorage.getItem('reviewStreak') || '0');
+        localStorage.setItem('reviewStreak', (streak + 1).toString());
+        localStorage.setItem('lastReviewDate', today);
+      }
+      const currentCount = parseInt(localStorage.getItem(`reviewed_${today}`) || '0');
+      localStorage.setItem(`reviewed_${today}`, (currentCount + 1).toString());
     } catch (err) {
       toast.error('Failed to save draft');
       throw err;
@@ -202,10 +215,18 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="container px-4 py-6">
+        {/* Daily Briefing */}
+        <DailyBriefing topics={topics} userName="Renato" />
+
         {/* Stats */}
-        <div className="mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mb-6"
+        >
           <DashboardStatsComponent />
-        </div>
+        </motion.div>
 
         {/* Search and Filters */}
         <div className="flex gap-2 mb-6">

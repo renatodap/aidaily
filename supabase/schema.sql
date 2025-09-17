@@ -67,13 +67,13 @@ CREATE TRIGGER update_topics_updated_at BEFORE UPDATE
 CREATE TRIGGER update_topic_metrics_updated_at BEFORE UPDATE
     ON topic_metrics FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Function to validate commentary word count (minimum 500 words)
+-- Function to validate commentary length (minimum 100 characters)
 CREATE OR REPLACE FUNCTION validate_commentary_length()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.status = 'approved' AND NEW.my_commentary IS NOT NULL THEN
-        IF array_length(string_to_array(NEW.my_commentary, ' '), 1) < 500 THEN
-            RAISE EXCEPTION 'Commentary must be at least 500 words to approve topic';
+        IF length(NEW.my_commentary) < 100 THEN
+            RAISE EXCEPTION 'Commentary must be at least 100 characters to approve topic';
         END IF;
     END IF;
     RETURN NEW;

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { motion } from 'framer-motion';
 import {
   Clock,
   TrendingUp,
@@ -61,21 +62,28 @@ export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicC
     ));
   };
 
-  const wordCount = topic.my_commentary
-    ? topic.my_commentary.split(' ').filter(word => word.length > 0).length
-    : 0;
+  const characterCount = topic.my_commentary ? topic.my_commentary.length : 0;
 
   return (
-    <Card
-      className={cn(
-        'transition-all duration-200 cursor-pointer',
-        'hover:shadow-lg hover:-translate-y-0.5',
-        topic.status === 'approved' && 'border-green-500/20',
-        topic.status === 'archived' && 'opacity-60'
-      )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={() => onReview(topic)}
+    <motion.div
+      id={`topic-${topic.id}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      transition={{ duration: 0.4 }}
+    >
+      <Card
+        className={cn(
+          'transition-all duration-200 cursor-pointer relative overflow-hidden',
+          'hover:shadow-2xl hover:shadow-purple-500/10',
+          'bg-gradient-to-br from-background to-background/80',
+          topic.status === 'approved' && 'border-green-500/30 bg-green-950/10',
+          topic.status === 'archived' && 'opacity-60',
+          topic.momentum === 'breaking' && 'border-red-500/30 animate-pulse-subtle'
+        )}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => onReview(topic)}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
@@ -158,10 +166,10 @@ export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicC
 
             {topic.my_commentary && (
               <Badge
-                variant={wordCount >= 500 ? "default" : "secondary"}
+                variant={characterCount >= 100 ? "default" : "secondary"}
                 className="text-xs"
               >
-                {wordCount} words
+                {characterCount} chars
               </Badge>
             )}
           </div>
@@ -182,7 +190,7 @@ export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicC
                     <Archive className="h-3 w-3" />
                   </Button>
                 )}
-                {onQuickApprove && wordCount >= 500 && (
+                {onQuickApprove && characterCount >= 100 && (
                   <Button
                     size="sm"
                     variant="ghost"
@@ -210,6 +218,15 @@ export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicC
           </div>
         </div>
       </CardContent>
+
+      {/* Visual momentum indicator */}
+      {topic.momentum === 'breaking' && (
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/20 to-transparent rounded-full blur-2xl animate-pulse" />
+      )}
+      {topic.momentum === 'peaking' && (
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/20 to-transparent rounded-full blur-2xl" />
+      )}
     </Card>
+    </motion.div>
   );
 }

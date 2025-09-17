@@ -103,7 +103,6 @@ export function TopicReviewModal({
     return () => clearTimeout(timer);
   }, [commentary, hashtags, topic, onSave]);
 
-  const wordCount = commentary.split(' ').filter(word => word.length > 0).length;
   const characterCount = commentary.length;
 
   const handleSaveDraft = useCallback(async () => {
@@ -122,8 +121,8 @@ export function TopicReviewModal({
 
   const handleApprove = useCallback(async () => {
     if (!topic) return;
-    if (wordCount < 500) {
-      toast.error('Commentary must be at least 500 words');
+    if (characterCount < 100) {
+      toast.error('Commentary must be at least 100 characters');
       return;
     }
     setIsSaving(true);
@@ -136,7 +135,7 @@ export function TopicReviewModal({
     } finally {
       setIsSaving(false);
     }
-  }, [topic, wordCount, commentary, hashtags, onApprove, onClose]);
+  }, [topic, characterCount, commentary, hashtags, onApprove, onClose]);
 
   const handleArchive = async () => {
     if (!topic) return;
@@ -189,7 +188,7 @@ export function TopicReviewModal({
       }
 
       // Cmd/Ctrl + Enter to approve
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && wordCount >= 500) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && characterCount >= 100) {
         e.preventDefault();
         handleApprove();
       }
@@ -197,7 +196,7 @@ export function TopicReviewModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, topic, wordCount, handleSaveDraft, handleApprove]);
+  }, [isOpen, topic, characterCount, handleSaveDraft, handleApprove]);
 
   if (!topic) return null;
 
@@ -305,16 +304,13 @@ export function TopicReviewModal({
                   <span>Your Commentary</span>
                   <div className="flex items-center gap-2">
                     <Badge
-                      variant={wordCount >= 500 ? "default" : "secondary"}
+                      variant={characterCount >= 100 ? "default" : "secondary"}
                       className={cn(
                         "transition-colors",
-                        wordCount >= 500 && "bg-green-500/10 text-green-600 border-green-500/20"
+                        characterCount >= 100 && "bg-green-500/10 text-green-600 border-green-500/20"
                       )}
                     >
-                      {wordCount} words
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {characterCount} characters
+                      {characterCount} / 100 characters
                     </Badge>
                   </div>
                 </CardTitle>
@@ -323,13 +319,13 @@ export function TopicReviewModal({
                 <Textarea
                   value={commentary}
                   onChange={(e) => setCommentary(e.target.value)}
-                  placeholder="Add your personal insights and analysis (minimum 500 words)..."
-                  className="min-h-[300px] font-mono"
+                  placeholder="Add your quick insights (minimum 100 characters)..."
+                  className="min-h-[150px] font-mono"
                 />
-                {wordCount < 500 && (
+                {characterCount < 100 && (
                   <p className="text-sm text-amber-600 dark:text-amber-400 mt-2">
                     <AlertCircle className="h-3 w-3 inline mr-1" />
-                    {500 - wordCount} more words needed to approve
+                    {100 - characterCount} more characters needed to approve
                   </p>
                 )}
                 {lastSaved && (
@@ -460,9 +456,9 @@ export function TopicReviewModal({
             </Button>
             <Button
               onClick={handleApprove}
-              disabled={isSaving || wordCount < 500}
+              disabled={isSaving || characterCount < 100}
               className={cn(
-                wordCount >= 500 && "bg-green-600 hover:bg-green-700"
+                characterCount >= 100 && "bg-green-600 hover:bg-green-700"
               )}
             >
               <CheckCircle className="h-4 w-4 mr-2" />
