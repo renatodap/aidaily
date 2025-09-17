@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createBrowserClient } from '@supabase/ssr';
 import type { Topic, TopicFilters } from '@/lib/types';
 
 export function useTopics(filters?: TopicFilters) {
@@ -7,7 +7,10 @@ export function useTopics(filters?: TopicFilters) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const fetchTopics = useCallback(async () => {
     try {
@@ -103,18 +106,13 @@ export function useTopics(filters?: TopicFilters) {
   }, [fetchTopics, supabase]);
 
   const updateTopic = async (id: string, updates: Partial<Topic>) => {
-    // Create a clean update object without id and created_at
-    const cleanUpdates: Record<string, unknown> = {};
+    // Remove read-only fields from updates
+    const { id: _id, created_at, ...cleanUpdates } = updates;
 
-    Object.keys(updates).forEach(key => {
-      if (key !== 'id' && key !== 'created_at') {
-        cleanUpdates[key] = (updates as Record<string, unknown>)[key];
-      }
-    });
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await supabase
       .from('topics')
-      .update(cleanUpdates)
+      .update(cleanUpdates as any)
       .eq('id', id)
       .select();
 

@@ -12,7 +12,7 @@ import {
   Brain
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { createClient } from '@/lib/supabase/client';
+import { createBrowserClient } from '@supabase/ssr';
 import type { DashboardStats, Topic } from '@/lib/types';
 
 export function DashboardStatsComponent() {
@@ -24,7 +24,10 @@ export function DashboardStatsComponent() {
   }, []);
 
   const fetchStats = async () => {
-    const supabase = createClient();
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     try {
       // Fetch all topics for stats

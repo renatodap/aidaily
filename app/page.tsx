@@ -78,9 +78,9 @@ export default function Dashboard() {
         updated_at: new Date().toISOString(),
       });
       toast.success('Draft saved');
-    } catch (error) {
+    } catch (err) {
       toast.error('Failed to save draft');
-      throw error;
+      throw err;
     }
   };
 
@@ -94,9 +94,9 @@ export default function Dashboard() {
         updated_at: new Date().toISOString(),
       });
       toast.success('Topic approved successfully');
-    } catch (error) {
+    } catch (err) {
       toast.error('Failed to approve topic');
-      throw error;
+      throw err;
     }
   };
 
@@ -107,9 +107,9 @@ export default function Dashboard() {
         updated_at: new Date().toISOString(),
       });
       toast.success('Topic archived');
-    } catch (error) {
+    } catch (err) {
       toast.error('Failed to archive topic');
-      throw error;
+      throw err;
     }
   };
 
