@@ -104,6 +104,7 @@ export function TopicReviewModal({
   }, [commentary, hashtags, topic, onSave]);
 
   const characterCount = commentary.length;
+  const canApprove = characterCount >= 100;
 
   const handleSaveDraft = useCallback(async () => {
     if (!topic) return;
@@ -188,7 +189,7 @@ export function TopicReviewModal({
       }
 
       // Cmd/Ctrl + Enter to approve
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && characterCount >= 100) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canApprove) {
         e.preventDefault();
         handleApprove();
       }
@@ -196,7 +197,7 @@ export function TopicReviewModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, topic, characterCount, handleSaveDraft, handleApprove]);
+  }, [isOpen, topic, canApprove, handleSaveDraft, handleApprove]);
 
   if (!topic) return null;
 
@@ -304,10 +305,10 @@ export function TopicReviewModal({
                   <span>Your Commentary</span>
                   <div className="flex items-center gap-2">
                     <Badge
-                      variant={characterCount >= 100 ? "default" : "secondary"}
+                      variant={canApprove ? "default" : "secondary"}
                       className={cn(
                         "transition-colors",
-                        characterCount >= 100 && "bg-green-500/10 text-green-600 border-green-500/20"
+                        canApprove && "bg-green-500/10 text-green-600 border-green-500/20"
                       )}
                     >
                       {characterCount} / 100 characters
@@ -456,13 +457,14 @@ export function TopicReviewModal({
             </Button>
             <Button
               onClick={handleApprove}
-              disabled={isSaving || characterCount < 100}
+              disabled={isSaving || !canApprove}
               className={cn(
-                characterCount >= 100 && "bg-green-600 hover:bg-green-700"
+                "transition-all",
+                canApprove ? "bg-green-600 hover:bg-green-700" : "opacity-50"
               )}
             >
               <CheckCircle className="h-4 w-4 mr-2" />
-              Approve & Move
+              {canApprove ? "Approve & Move" : `Need ${100 - characterCount} chars`}
             </Button>
           </div>
         </div>
