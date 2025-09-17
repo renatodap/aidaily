@@ -106,8 +106,14 @@ export function useTopics(filters?: TopicFilters) {
   }, [fetchTopics, supabase]);
 
   const updateTopic = async (id: string, updates: Partial<Topic>) => {
-    // Remove read-only fields from updates
-    const { id: _id, created_at, ...cleanUpdates } = updates;
+    // Create clean update object excluding read-only fields
+    const cleanUpdates: Record<string, unknown> = {};
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (key !== 'id' && key !== 'created_at') {
+        cleanUpdates[key] = value;
+      }
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await supabase
