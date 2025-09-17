@@ -253,25 +253,33 @@ export function TopicReviewModal({
           </div>
 
           <div className="flex items-center gap-2 mt-3">
-            <Badge
-              variant="outline"
-              className={cn('capitalize flex items-center gap-1', momentumColors[topic.momentum])}
-            >
-              {momentumIcons[topic.momentum]}
-              {topic.momentum}
-            </Badge>
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-muted-foreground">Technical:</span>
-              {renderStars(topic.technical_depth)}
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-muted-foreground">Viral:</span>
-              {renderStars(topic.viral_potential)}
-            </div>
-            <Badge variant="secondary" className="text-xs">
-              <Clock className="h-3 w-3 mr-1" />
-              {formatDistanceToNow(new Date(topic.perplexity_generated_at), { addSuffix: true })}
-            </Badge>
+            {topic.momentum && (
+              <Badge
+                variant="outline"
+                className={cn('capitalize flex items-center gap-1', momentumColors[topic.momentum])}
+              >
+                {momentumIcons[topic.momentum]}
+                {topic.momentum}
+              </Badge>
+            )}
+            {topic.technical_depth && (
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">Technical:</span>
+                {renderStars(topic.technical_depth)}
+              </div>
+            )}
+            {topic.viral_potential && (
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">Viral:</span>
+                {renderStars(topic.viral_potential)}
+              </div>
+            )}
+            {topic.perplexity_generated_at && (
+              <Badge variant="secondary" className="text-xs">
+                <Clock className="h-3 w-3 mr-1" />
+                {formatDistanceToNow(new Date(topic.perplexity_generated_at), { addSuffix: true })}
+              </Badge>
+            )}
           </div>
         </DialogHeader>
 

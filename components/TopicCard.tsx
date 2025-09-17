@@ -77,26 +77,34 @@ export function TopicCard({ topic, onReview, onArchive, onQuickApprove }: TopicC
           <h3 className="font-semibold text-lg text-gray-900 leading-tight flex-1 mr-3">
             {topic.title}
           </h3>
-          <Badge
-            variant="outline"
-            className={cn('text-xs font-medium shrink-0', momentumColors[topic.momentum])}
-          >
-            {topic.momentum}
-          </Badge>
+          {topic.momentum && (
+            <Badge
+              variant="outline"
+              className={cn('text-xs font-medium shrink-0', momentumColors[topic.momentum])}
+            >
+              {topic.momentum}
+            </Badge>
+          )}
         </div>
 
         <div className="flex items-center gap-4 text-xs text-gray-500">
-          <div className="flex items-center gap-1">
-            <span>Technical:</span>
-            <span className="font-medium text-gray-700">{topic.technical_depth}/5</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span>Viral:</span>
-            <span className="font-medium text-gray-700">{topic.viral_potential}/5</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span>{formatDistanceToNow(new Date(topic.perplexity_generated_at), { addSuffix: true })}</span>
-          </div>
+          {topic.technical_depth && (
+            <div className="flex items-center gap-1">
+              <span>Technical:</span>
+              <span className="font-medium text-gray-700">{topic.technical_depth}/5</span>
+            </div>
+          )}
+          {topic.viral_potential && (
+            <div className="flex items-center gap-1">
+              <span>Viral:</span>
+              <span className="font-medium text-gray-700">{topic.viral_potential}/5</span>
+            </div>
+          )}
+          {topic.perplexity_generated_at && (
+            <div className="flex items-center gap-1">
+              <span>{formatDistanceToNow(new Date(topic.perplexity_generated_at), { addSuffix: true })}</span>
+            </div>
+          )}
         </div>
       </div>
 

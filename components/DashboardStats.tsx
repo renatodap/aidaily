@@ -67,11 +67,11 @@ export function DashboardStatsComponent() {
 
         // Calculate averages
         const technicalDepthAverage = topics.length > 0
-          ? topics.reduce((acc, t) => acc + t.technical_depth, 0) / topics.length
+          ? topics.reduce((acc, t) => acc + (t.technical_depth || 0), 0) / topics.length
           : 0;
 
         const viralPotentialAverage = topics.length > 0
-          ? topics.reduce((acc, t) => acc + t.viral_potential, 0) / topics.length
+          ? topics.reduce((acc, t) => acc + (t.viral_potential || 0), 0) / topics.length
           : 0;
 
         const calculatedStats: DashboardStats = {

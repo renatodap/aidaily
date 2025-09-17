@@ -58,7 +58,7 @@ export function DailyBriefing({ topics, userName = 'Explorer' }: DailyBriefingPr
   const pendingTopics = topics.filter(t => t.status === 'pending');
   const breakingTopics = pendingTopics.filter(t => t.momentum === 'breaking');
   const highPriorityTopics = pendingTopics.filter(t =>
-    t.viral_potential >= 4 || t.technical_depth >= 4
+    (t.viral_potential && t.viral_potential >= 4) || (t.technical_depth && t.technical_depth >= 4)
   );
 
   const getGreeting = () => {

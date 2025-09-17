@@ -48,7 +48,7 @@ export function useTopics(filters?: TopicFilters) {
       }
 
       if (filters?.searchTerm) {
-        query = query.or(`title.ilike.%${filters.searchTerm}%,summary.ilike.%${filters.searchTerm}%`);
+        query = query.or(`title.ilike.%${filters.searchTerm}%,summary.ilike.%${filters.searchTerm}%,angle.ilike.%${filters.searchTerm}%,viral_hook.ilike.%${filters.searchTerm}%,clickbait_title.ilike.%${filters.searchTerm}%`);
       }
 
       if (filters?.dateFrom) {
@@ -57,6 +57,23 @@ export function useTopics(filters?: TopicFilters) {
 
       if (filters?.dateTo) {
         query = query.lte('created_at', filters.dateTo);
+      }
+
+      // New strategic filters
+      if (filters?.verdict && filters.verdict.length > 0) {
+        query = query.in('verdict', filters.verdict);
+      }
+
+      if (filters?.minGoldmineScore !== undefined) {
+        query = query.gte('content_goldmine_score', filters.minGoldmineScore);
+      }
+
+      if (filters?.hasFirstMover) {
+        query = query.eq('first_mover_advantage', 'yes');
+      }
+
+      if (filters?.priority && filters.priority.length > 0) {
+        query = query.in('priority', filters.priority);
       }
 
       const { data, error: fetchError } = await query;
